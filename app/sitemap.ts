@@ -1,7 +1,7 @@
+import { siteUrl } from "./site";
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const siteUrl = "https://awanish-portfolio.vercel.app";
   return [
     {
       url: siteUrl,

@@ -1,8 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
-// NOTE: replace with the real production domain before deploying.
-const siteUrl = "https://awanish-portfolio.vercel.app";
+import { siteUrl } from "./site";
 
 export const metadata: Metadata = {
   title: {

@@ -42,7 +42,6 @@ export default async function OpengraphImage() {
           </div>
         </div>
         <div style={{ display: "flex", flex: 0.85, position: "relative" }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={photoSrc}
             alt=""

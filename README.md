@@ -61,7 +61,7 @@ The website highlights my journey, technical skills, featured projects, certific
 
 - Framer Motion
 - Lucide React
-- React Icons
+- GSAP
 
 ### Deployment
 
@@ -127,6 +127,26 @@ http://localhost:3000
 ### 🔗 https://portfolio-awanish.vercel.app/
 
 ---
+
+# Featured RAG project
+
+[Ask Your PDFs](https://awanish-ask-your-pdfs.streamlit.app/) is featured first in the portfolio.
+It uses Python, Streamlit, LangChain splitting, Cohere embeddings, ChromaDB retrieval,
+and Groq generation with numbered document/page/chunk references.
+[Source code](https://github.com/awanishmishra642-commits/rag-doc-qa).
+
+## Verification
+
+```bash
+pnpm lint
+pnpm exec tsc --noEmit
+pnpm build
+```
+
+The production URL is defined in `app/site.ts` for metadata, robots and sitemap.
+Certificate previews use a native modal dialog for keyboard focus containment,
+Escape dismissal and focus restoration. The mobile menu supports Escape and
+exposes its expanded state. Motion follows the visitor's reduced-motion preference.
 
 # 📌 Future Improvements
 

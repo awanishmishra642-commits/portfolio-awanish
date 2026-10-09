@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig, useReducedMotion } from "framer-motion";
 import gsap from "gsap";
 import Image from "next/image";
 import {
@@ -18,6 +18,16 @@ const links = {
 };
 
 const projects = [
+  {
+    name: "Ask Your PDFs",
+    category: "Featured · Retrieval-augmented generation",
+    image: "",
+    description: "A document Q&A app that turns selectable-text PDFs into searchable knowledge. It retrieves relevant passages and generates answers with numbered document, page, and chunk references you can inspect.",
+    stack: ["Python", "Streamlit", "LangChain", "ChromaDB", "Cohere", "Groq"],
+    github: "https://github.com/awanishmishra642-commits/rag-doc-qa",
+    demo: "https://awanish-ask-your-pdfs.streamlit.app/",
+    tone: "teal",
+  },
   {
     name: "Nerve IDE",
     category: "AI-powered coding interview platform",
@@ -51,12 +61,12 @@ const projects = [
 ];
 
 const skillGroups = [
-  { icon: Code2, label: "Languages", skills: ["Java", "TypeScript", "JavaScript", "HTML", "CSS"] },
-  { icon: Layers3, label: "Frontend", skills: ["React", "Tailwind CSS", "Responsive UI"] },
+  { icon: Code2, label: "Languages", skills: ["Python", "Java", "TypeScript", "JavaScript", "HTML", "CSS"] },
+  { icon: Layers3, label: "Frontend", skills: ["React", "Next.js", "Streamlit", "Tailwind CSS", "Responsive UI"] },
   { icon: TerminalSquare, label: "Backend & APIs", skills: ["Node.js", "Express.js", "REST APIs", "JWT Auth", "Postman"] },
   { icon: Database, label: "Data", skills: ["PostgreSQL", "Prisma ORM", "Relational schema design"] },
   { icon: Cpu, label: "Embedded & IoT", skills: ["ESP32", "Arduino Uno", "GSM / GPS", "ThingSpeak", "Sensors"] },
-  { icon: Sparkles, label: "Computer Science", skills: ["DSA", "OOP", "DBMS", "OS", "Networks", "System design basics"] },
+  { icon: Sparkles, label: "AI & Retrieval", skills: ["RAG", "LangChain", "ChromaDB", "Cohere embeddings", "Groq", "LLM evaluation"] },
 ];
 
 const certificates = [
@@ -79,6 +89,8 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [selectedCertificate, setSelectedCertificate] = useState<(typeof certificates)[number] | null>(null);
   const heroRef = useRef<HTMLElement>(null);
+  const certificateDialog = useRef<HTMLDialogElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
   const reduced = useReducedMotion();
 
   useEffect(() => {
@@ -91,20 +103,44 @@ export default function Home() {
 
   useEffect(() => {
     if (!selectedCertificate) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedCertificate(null);
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const dialog = certificateDialog.current;
+    const previousOverflow = document.body.style.overflow;
+    dialog?.showModal();
+    document.body.style.overflow = "hidden";
+    return () => {
+      dialog?.close();
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus();
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedCertificate]);
 
-  return <main>
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    const desktop = window.matchMedia("(min-width: 851px)");
+    const onResize = () => { if (desktop.matches) setMenuOpen(false); };
+    window.addEventListener("keydown", onKeyDown);
+    desktop.addEventListener("change", onResize);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      desktop.removeEventListener("change", onResize);
+    };
+  }, [menuOpen]);
+
+  return <MotionConfig reducedMotion="user"><main>
+    <a className="skip-link" href="#about">Skip to content</a>
     <nav className="nav-shell" aria-label="Main navigation">
       <a className="wordmark" href="#top" onClick={closeMenu}>AM<span>.</span></a>
       <div className="nav-links"><a href="#about">About</a><a href="#work">Work</a><a href="#experience">Experience</a><a href="#contact">Contact</a></div>
       <a className="nav-resume" href={links.resume} download><Download size={15} /> Resume</a>
-      <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
-      <AnimatePresence>{menuOpen && <motion.div className="mobile-nav" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}><a onClick={closeMenu} href="#about">About</a><a onClick={closeMenu} href="#work">Work</a><a onClick={closeMenu} href="#experience">Experience</a><a onClick={closeMenu} href="#contact">Contact</a></motion.div>}</AnimatePresence>
+      <button ref={menuButton} aria-expanded={menuOpen} aria-controls="mobile-navigation" className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X /> : <Menu />}</button>
+      <AnimatePresence>{menuOpen && <motion.div id="mobile-navigation" className="mobile-nav" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}><a onClick={closeMenu} href="#about">About</a><a onClick={closeMenu} href="#work">Work</a><a onClick={closeMenu} href="#experience">Experience</a><a onClick={closeMenu} href="#contact">Contact</a></motion.div>}</AnimatePresence>
     </nav>
 
     <section className="hero" id="top" ref={heroRef}>
@@ -126,7 +162,7 @@ export default function Home() {
 
     <section className="section skills-section"><Reveal><SectionTitle eyebrow="02 — Toolkit" title="A versatile engineering foundation." copy="From interface to infrastructure to hardware, I enjoy working across the whole system." /></Reveal><div className="skills-grid">{skillGroups.map(({ icon: Icon, label, skills }) => <Reveal key={label} className="skill-card"><Icon size={20} /><h3>{label}</h3><div>{skills.map(skill => <span key={skill}>{skill}</span>)}</div></Reveal>)}</div></section>
 
-    <section id="work" className="section work-section"><Reveal><SectionTitle eyebrow="03 — Selected work" title="Building products that turn complexity into clarity." /></Reveal><div className="project-list">{projects.map((project, index) => <Reveal key={project.name} className={`project-card ${project.tone}`}><div className="project-visual"><Image src={project.image} alt={`${project.name} project interface or prototype`} width={960} height={520} sizes="(max-width: 850px) 100vw, 52vw" /><span className="project-index">0{index + 1}</span></div><div className="project-content"><p className="project-category">{project.category}</p><h3>{project.name}</h3><p>{project.description}</p><div className="stack">{project.stack.map(item => <span key={item}>{item}</span>)}</div><div className="project-actions"><a href={project.github} target="_blank" rel="noreferrer">GitHub <Github size={15} /></a>{project.demo ? <a href={project.demo} target="_blank" rel="noreferrer">Live demo <ExternalLink size={15} /></a> : project.hardware && <span className="hardware-badge">Hardware Project — Source Code &amp; Documentation Available</span>}</div></div></Reveal>)}</div>
+    <section id="work" className="section work-section"><Reveal><SectionTitle eyebrow="03 — Selected work" title="Building products that turn complexity into clarity." /></Reveal><div className="project-list">{projects.map((project, index) => <Reveal key={project.name} className={`project-card ${project.tone}`}><div className="project-visual">{project.image ? <Image src={project.image} alt={`${project.name} project interface or prototype`} width={960} height={520} sizes="(max-width: 850px) 100vw, 52vw" /> : <div className="rag-preview"><div className="rag-preview-header"><Database size={18} /><span>DOCUMENT INTELLIGENCE</span></div><h4>Your documents.<br /><em>Connected answers.</em></h4><p>Upload PDFs. Ask a question. Inspect the sources.</p><ol className="rag-pipeline"><li>PDF text</li><li>Vector search</li><li>Cited answer</li></ol><div className="rag-source"><Check size={16} /><span>Document · Page · Chunk references</span></div></div>}<span className="project-index">0{index + 1}</span></div><div className="project-content"><p className="project-category">{project.category}</p><h3>{project.name}</h3><p>{project.description}</p><div className="stack">{project.stack.map(item => <span key={item}>{item}</span>)}</div><div className="project-actions"><a href={project.github} target="_blank" rel="noreferrer">GitHub <Github size={15} /></a>{project.demo ? <a href={project.demo} target="_blank" rel="noreferrer">Live demo <ExternalLink size={15} /></a> : project.hardware && <span className="hardware-badge">Hardware Project — Source Code &amp; Documentation Available</span>}</div></div></Reveal>)}</div>
     </section>
 
     <section id="experience" className="section experience-section"><Reveal><SectionTitle eyebrow="04 — Experience" title="Learning how high-quality AI systems are shaped." /></Reveal><Reveal className="experience-card"><div className="experience-meta"><span>Jan — May 2026</span><span>Ethara AI</span></div><div className="experience-body"><h3>LLM Post-Training Intern</h3><p>Worked on structured data quality and evaluation workflows for LLM post-training, collaborating through review cycles to improve model output reliability.</p><ul><li><Check /> Curated and annotated large-scale training data using defined quality criteria.</li><li><Check /> Evaluated AI-generated outputs, identifying error patterns against correctness benchmarks.</li><li><Check /> Contributed technical feedback within multi-person model training and evaluation workflows.</li></ul></div><BriefcaseBusiness className="experience-icon" size={42} /></Reveal></section>
@@ -141,6 +177,6 @@ export default function Home() {
 
     <footer><span>© {new Date().getFullYear()} Awanish Mishra</span><span>Built with focus and curiosity.</span></footer>
 
-    <AnimatePresence>{selectedCertificate && <motion.div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`${selectedCertificate.title} certificate`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedCertificate(null)}><motion.div className="certificate-modal" initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 16 }} onClick={event => event.stopPropagation()}><button className="modal-close" onClick={() => setSelectedCertificate(null)} aria-label="Close certificate"><X /></button><div className="modal-title"><span>{selectedCertificate.date}</span><h3>{selectedCertificate.title}</h3></div><a className="modal-download" href={selectedCertificate.kind === "pdf" ? selectedCertificate.asset : selectedCertificate.image} download aria-label={`Download ${selectedCertificate.title} certificate`}><Download size={15} /> Download</a>{selectedCertificate.kind === "image" ? <Image src={selectedCertificate.image} alt={`${selectedCertificate.title} certificate`} width={1920} height={1080} sizes="90vw" /> : <iframe src={selectedCertificate.asset} title={selectedCertificate.title} />}</motion.div></motion.div>}</AnimatePresence>
-  </main>;
+    {selectedCertificate && <dialog ref={certificateDialog} className="modal-backdrop" aria-label={`${selectedCertificate.title} certificate`} onCancel={() => setSelectedCertificate(null)} onClick={event => { if (event.target === event.currentTarget) setSelectedCertificate(null); }}><motion.div className="certificate-modal" initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 16 }} onClick={event => event.stopPropagation()}><button className="modal-close" onClick={() => setSelectedCertificate(null)} aria-label="Close certificate"><X /></button><div className="modal-title"><span>{selectedCertificate.date}</span><h3>{selectedCertificate.title}</h3></div><a className="modal-download" href={selectedCertificate.kind === "pdf" ? selectedCertificate.asset : selectedCertificate.image} download aria-label={`Download ${selectedCertificate.title} certificate`}><Download size={15} /> Download</a>{selectedCertificate.kind === "image" ? <Image src={selectedCertificate.image} alt={`${selectedCertificate.title} certificate`} width={1920} height={1080} sizes="90vw" /> : <iframe src={selectedCertificate.asset} title={selectedCertificate.title} />}</motion.div></dialog>}
+  </main></MotionConfig>;
 }
